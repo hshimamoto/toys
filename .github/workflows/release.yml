@@ -1,0 +1,19 @@
+name: release
+
+on: push
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build
+        run: make
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Latest files
+          tag_name: latest
+          files: |
+            toyproxy
