@@ -17,3 +17,5 @@ jobs:
           tag_name: latest
           files: |
             toyproxy
+            redirector
+            redirectreq

@@ -2,3 +2,5 @@
 !.gitignore
 !.github
 /toyproxy
+/redirector
+/redirectreq
