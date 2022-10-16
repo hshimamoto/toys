@@ -461,10 +461,10 @@ int main(int argc, char **argv)
 	int port = defport;
 	int s;
 
-	logf("toyproxy start port=%d\n", port);
-
 	if (argc >= 2)
 		port = atoi(argv[1]);
+
+	logf("toyproxy start port=%d\n", port);
 
 	signal(SIGPIPE, SIG_IGN);
 
