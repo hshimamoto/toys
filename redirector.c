@@ -59,6 +59,7 @@ void get_duration(char *buf, int n, struct timeval *prev)
 
 const int defport = 22;
 int fwdport = 8888;
+int timeout = 600;
 
 static int listensocket(int port)
 {
@@ -380,13 +381,22 @@ static void run(int s)
 {
 	fd_set rfds, wfds;
 	struct timeval tv;
+	struct timeval last, now;
+	int intval = timeout / 10;
+
+	if (intval < 10)
+		intval = 10;
+	else if (intval > 60)
+		intval = 60;
 
 	init_sessions();
+
+	gettimeofday(&last, NULL);
 
 	for (;;) {
 		int max = reset_fds(s, &rfds, &wfds);
 
-		tv.tv_sec = 600;
+		tv.tv_sec = intval;
 		tv.tv_usec = 0;
 
 		int ret = select(max, &rfds, &wfds, NULL, &tv);
@@ -395,10 +405,16 @@ static void run(int s)
 			logf("select errno=%d\n", errno);
 			return;
 		}
+
+		gettimeofday(&now, NULL);
 		if (ret == 0) {
-			logf("nothing happens in 600s, close\n");
-			return;
+			if (timeout > 0 && (now.tv_sec - last.tv_sec) >= timeout) {
+				logf("nothing happens in %ds, close\n", timeout);
+				return;
+			}
+			continue;
 		}
+		last.tv_sec = now.tv_sec;
 
 		handle_wfds(&wfds);
 		handle_rfds(&rfds);
@@ -413,20 +429,28 @@ int main(int argc, char **argv)
 {
 	int port = defport;
 	int fwd = fwdport;
+	int to = timeout;
 	int s;
 
 	if (argc >= 2)
 		port = atoi(argv[1]);
 	if (argc >= 3)
 		fwd = atoi(argv[2]);
+	if (argc >= 4)
+		to = atoi(argv[3]);
 
 	if (fwd <= 0 || fwd >= 0xffff) {
 		logf("redirector: bad fwd=%d\n", fwd);
 		exit(1);
 	}
 	fwdport = fwd;
+	if (to < 0 || to > 3600) {
+		logf("redirector: bad timeout=%d\n", to);
+		exit(1);
+	}
+	timeout = to;
 
-	logf("redirector: start port=%d fwd=%d\n", port, fwd);
+	logf("redirector: start port=%d fwd=%d timeout=%d\n", port, fwd, timeout);
 
 	signal(SIGPIPE, SIG_IGN);
 
