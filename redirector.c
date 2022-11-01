@@ -58,6 +58,7 @@ void get_duration(char *buf, int n, struct timeval *prev)
 }
 
 const int defport = 22;
+int fwdport = 8888;
 
 static int listensocket(int port)
 {
@@ -201,7 +202,7 @@ static void request(struct session *s)
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	addr.sin_port = htons(8888);
+	addr.sin_port = htons(fwdport);
 
 	if (!memcmp("\xff\xff\xff\xff", s->buf, 4)) {
 		memcpy(&addr, &s->buf[4], 16);
@@ -411,12 +412,21 @@ static void run(int s)
 int main(int argc, char **argv)
 {
 	int port = defport;
+	int fwd = fwdport;
 	int s;
 
 	if (argc >= 2)
 		port = atoi(argv[1]);
+	if (argc >= 3)
+		fwd = atoi(argv[2]);
 
-	logf("redirector start port=%d\n", port);
+	if (fwd <= 0 || fwd >= 0xffff) {
+		logf("redirector: bad fwd=%d\n", fwd);
+		exit(1);
+	}
+	fwdport = fwd;
+
+	logf("redirector: start port=%d fwd=%d\n", port, fwd);
 
 	signal(SIGPIPE, SIG_IGN);
 
