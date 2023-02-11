@@ -1,13 +1,16 @@
+CC = gcc
+CFLAGS = -g -Os
+
 all: toyproxy redirector redirectreq
 
 toyproxy: toyproxy.c
-	gcc -g -Os -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 redirector: redirector.c
-	gcc -g -Os -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 redirectreq: redirectreq.c
-	gcc -g -Os -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
 	rm -f toyproxy redirector redirectreq
