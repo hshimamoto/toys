@@ -8,6 +8,12 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - name: setup-zig
+        uses: goto-bus-stop/setup-zig@v2
+      - name: build for aarch64
+        run: make CC="zig cc -target aarch64-linux-gnu"
+      - name: store .arm64
+        run: mv toyproxy toyproxy.arm64 && mv redirector redirector.arm64 && mv redirectreq redirectreq.arm64
       - name: build
         run: make
       - name: release
@@ -19,3 +25,6 @@ jobs:
             toyproxy
             redirector
             redirectreq
+            toyproxy.arm64
+            redirector.arm64
+            redirectreq.arm64
